@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/tasks';
+const API_URL = 'http://backend:5000/api/tasks';
 
 async function fetchTasks() {
     try {

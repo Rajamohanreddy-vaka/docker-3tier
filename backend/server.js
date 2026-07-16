@@ -13,7 +13,11 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-const TaskSchema = new mongoose.Schema({ title: String });
+// Updated Schema to track task status
+const TaskSchema = new mongoose.Schema({ 
+  title: { type: String, required: true },
+  completed: { type: Boolean, default: false }
+});
 const Task = mongoose.model('Task', TaskSchema);
 
 app.get('/health', (req, res) => {
@@ -23,15 +27,50 @@ app.get('/health', (req, res) => {
   return res.status(500).json({ status: 'DOWN', database: 'DISCONNECTED' });
 });
 
-app.get('/api/tasks', async (req, res) => {
-  const tasks = await Task.find();
-  res.json(tasks);
+// CREATE
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const newTask = new Task({ title: req.body.title });
+    await newTask.save();
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.post('/api/tasks', async (req, res) => {
-  const newTask = new Task({ title: req.body.title });
-  await newTask.save();
-  res.status(201).json(newTask);
+// READ
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// UPDATE (Toggle Completed Status)
+app.put('/api/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    
+    task.completed = !task.completed;
+    await task.save();
+    res.json(task);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    const deletedTask = await Task.findByIdAndDelete(req.params.id);
+    if (!deletedTask) return res.status(404).json({ error: 'Task not found' });
+    res.json({ message: 'Task deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => console.log(`Backend server running on port ${PORT}`));

@@ -1,0 +1,40 @@
+services:
+  database:
+    build: ./database
+    image: rajamohanreddy4487/database:1.0.0
+    container_name: mongodb
+    expose:
+      - 27017
+    volumes:
+      - mongodb:/data/db
+  
+  backend:
+    build: ./backend
+    image: rajamohanreddy4487/backend:1.0.0
+    container_name: backend
+    expose:
+      - 5000
+    env_file:
+      - .backend.env
+    depends_on:
+      - database
+  
+  frontend:
+    build: ./frontend
+    image: rajamohanreddy4487/frontend:1.0.0
+    container_name: frontend
+    depends_on:
+      - backend
+      - database
+    ports:
+      - 80:80
+
+networks:
+  default:
+   driver: bridge
+   name: test
+   external: false
+
+volumes:
+  mongodb:
+

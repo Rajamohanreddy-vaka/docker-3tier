@@ -1,6 +1,5 @@
 services:
   database:
-    build: ./database
     image: rajamohanreddy4487/database:1.0.0
     container_name: mongodb
     expose:
@@ -9,7 +8,6 @@ services:
       - mongodb:/data/db
   
   backend:
-    build: ./backend
     image: rajamohanreddy4487/backend:1.0.0
     container_name: backend
     expose:
@@ -20,7 +18,6 @@ services:
       - database
   
   frontend:
-    build: ./frontend
     image: rajamohanreddy4487/frontend:1.0.0
     container_name: frontend
     depends_on:
